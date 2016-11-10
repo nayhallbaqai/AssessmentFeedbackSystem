@@ -1,8 +1,10 @@
 .Python
-project/bin
-project/lib
-project/include
-project/pip-selfcheck.json
-project/AssessmentFeedback/db.sqlite3
+.gitignore
+bin
+lib
+include
+project/AssessmentFeedback/.idea
+db.sqlite3
+pip-selfcheck.json
 *.DS_Store
 *.pyc
