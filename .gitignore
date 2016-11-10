@@ -2,5 +2,7 @@
 project/bin
 project/lib
 project/include
-.DS_Store
+project/pip-selfcheck.json
+project/AssessmentFeedback/db.sqlite3
+*.DS_Store
 *.pyc
