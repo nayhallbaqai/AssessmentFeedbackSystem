@@ -1,0 +1,34 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+
+<html>
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<style> body { padding-bottom: 70px; }</style>
+<body>
+	<nav class="navbar navbar-default navbar-static-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="#">FeedbackSystem</a>
+			</div>
+			<ul class="nav navbar-nav navbar-right">
+			{% if user.authenticated %}
+				<li class="active"><a href="#">Course</a></li>
+			{% else %}
+				<li><a href="#">Course</a></li>
+			{% endif %}
+				<li><a href="#">Assignment</a></li>
+			</ul>
+		</div>
+	</nav>
+	{% block title %}FeedbackSystem{% endblock %}
+
+	<div>
+		{% block content %}
+		{% endblock %}
+	</div>
+	
+</body>
+
+</html>
