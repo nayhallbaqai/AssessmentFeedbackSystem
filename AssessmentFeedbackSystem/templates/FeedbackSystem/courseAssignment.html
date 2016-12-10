@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% if user.is_authenticated %}
+    {% block content %}
+        <a href="/accounts/logout/">Logout</a><br />
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4">
+                    <h1>Courses</h1>
+                    {% csrf_token %}
+                    <div class="list-group" id="courses">
+                        <a href="All" class="list-group-item active">All</a>
+                        {% for course in courses %}
+                            <a href="{{ course.pk }}" class="list-group-item">{{ course.name }}</a>
+                        {% endfor %}
+                    </div>
+                    <i class="icon-chevron-right"></i>
+                </div>
+                <div class="col-sm-8">
+                    <h1>Assignments</h1>
+                    <div class="assignment" style="overflow: scroll;">
+                        <div class="list-group" id="assignment">
+                            {% for assignment in AllAssignments %}
+                                <a href="#" class="list-group-item">{{ assignment.title }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <footer class="footer">
+                            <button class="btn btn-primary">Add Assignment</button>
+                            <button class="btn btn-primary">Add Students</button>
+                            <button class="btn btn-primary">View Students</button>
+                        </footer>
+                </div>
+            </div>
+	    </div>
+    {% endblock %}
+{% endif %}
