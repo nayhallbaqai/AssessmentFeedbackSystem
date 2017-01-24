@@ -1,0 +1,13 @@
+{% if general_comments %}
+    {% for general in general_comments %}
+        <div class="each-general-comment list-group-item" id="{{ general.pk }}" data-used="{{ general.usedNum }}" style="display: flex;">
+            <a class="draggable list-group-item" id="a-{{ general.pk }}" data-params="{csrfmiddlewaretoken:'{{csrf_token}}'}" data-pk="{{ general.pk }}"
+               style="width: 80%; border-style: solid; border-color: #ddd; cursor: pointer">{{ general.message }}</a>
+            <button class="btn delete-comment" style="width: 13%; margin-left: 18px;" onclick="delete_general_comment({{ general.pk }})">D</button>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="list-group-item" style="display: flex;">
+        No comments found
+    </div>
+{% endif %}

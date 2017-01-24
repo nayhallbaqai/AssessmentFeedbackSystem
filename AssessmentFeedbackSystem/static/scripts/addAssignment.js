@@ -1,3 +1,41 @@
+function getAssignments(courseID) {
+        // var linkToSend = "/getCourseAssignment/";
+        // if (courseID == "All") linkToSend = "/getAllAssignment/";
+
+    $.ajax({
+        url: "/ajax_assignment/",
+        method: "POST",
+        data: {
+            id: courseID,
+            'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
+        },
+        dataType: "html",
+        success: function (data) {
+            $('#assignment').html(data);
+        }
+    });
+
+}
+
+function addAssignment(title, selected_course, courseToUpdate){
+    $.ajax({
+        type: "POST",
+        url: "/addAssignment/",
+        data: {
+            'course_id' : selected_course,
+            'title' : title,
+            'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
+        },
+        success: function(data) {
+            $("#response").html(data);
+            $('.modal-body input').val("");
+
+            getAssignments(courseToUpdate);
+        },
+        dataType:'html'
+    });
+}
+
 $(function(){
 
     // $('#addAssignment').click(function (e) {
@@ -36,45 +74,6 @@ $(function(){
     //     }
     // });
 
-    function getAssignments(courseID) {
-        // var linkToSend = "/getCourseAssignment/";
-        // if (courseID == "All") linkToSend = "/getAllAssignment/";
-
-        $.ajax({
-            url: "/ajax_assignment/",
-            method: "POST",
-            data: {
-                id: courseID,
-                'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
-            },
-            dataType: "html",
-            success: function (data) {
-                $('#assignment').html(data);
-            }
-        });
-
-    }
-
-    function addAssignment(title, selected_course, courseToUpdate){
-
-        console.log("inside add assignment ajax");
-        $.ajax({
-            type: "POST",
-            url: "/addAssignment/",
-            data: {
-                'course_id' : selected_course,
-                'title' : title,
-                'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
-            },
-            success: function(data) {
-                $("#response").html(data);
-                $('.modal-body input').val("");
-
-                getAssignments(courseToUpdate);
-            },
-            dataType:'html'
-        });
-    }
     $('#assignmentModal').on('hide.bs.modal', function(e){
         $('#response').empty();
         // $('.selectpicker').attr(':selected', false);
@@ -86,7 +85,7 @@ $(function(){
         e.preventDefault();
         var title = $('#title').val();
         $('#title').val("");
-        var selected_course = $('.selectpicker').find(":selected").val();
+        var selected_course = $('#assignmentModal .selectpicker').find(":selected").val();
 
         var courseToUpdate = $('#courses .active').attr('href');
 

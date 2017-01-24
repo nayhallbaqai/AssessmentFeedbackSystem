@@ -1,0 +1,10 @@
+{% if forMainContent %}
+    <a href="All" class="list-group-item active">All</a>
+    {% for course in courses %}
+        <a href="{{ course.pk }}" class="list-group-item">{{ course.name }}</a>
+    {% endfor %}
+{% else %}
+    {% for course in courses %}
+        <option data-tokens="{{ course.name }}" value="{{ course.pk }}">{{ course.name }}</option>
+    {% endfor %}
+{% endif %}

@@ -1,16 +1,6 @@
-$(document).ready(function(){
-    function getCourses(addingAssignment) {
-        if (addingAssignment) {
-            $.ajax({
-            url:"getUserCourses/",
-            method:"GET",
-            dataType: "html",
-            success:function(data){
-                $('#').html(data);
-            }
-        });
-        }
-        $.ajax({
+
+function getCourses() {
+    $.ajax({
             url:"/getUserCourses/",
             method:"GET",
             dataType: "html",
@@ -18,7 +8,29 @@ $(document).ready(function(){
                 $('#courses').html(data);
             }
         });
-    }
+}
+
+$(document).ready(function(){
+    // function getCourses(addingAssignment) {
+    //     if (addingAssignment) {
+    //         $.ajax({
+    //         url:"getUserCourses/",
+    //         method:"GET",
+    //         dataType: "html",
+    //         success:function(data){
+    //             $('#').html(data);
+    //         }
+    //         });
+    //     }
+    //     $.ajax({
+    //         url:"/getUserCourses/",
+    //         method:"GET",
+    //         dataType: "html",
+    //         success:function(data){
+    //             $('#courses').html(data);
+    //         }
+    //     });
+    // }
 
     getCourses();
 

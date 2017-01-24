@@ -1,0 +1,327 @@
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <title>Title</title>#}
+{#</head>#}
+{#<body>#}
+{##}
+{#</body>#}
+{#</html>#}
+
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+        <!--suppress ALL -->
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+{#    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>#}
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+    <!- script for x-editable ->
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+
+    <!- D3 ->
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+
+    <div class="container">
+        <button id="previous_student" >Previous</button>
+        <button id="next_student" >Next</button>
+        <div class="row">
+            <div class="col-sm-8">
+                <div id="feedback_Zone" class="ui-widget-content ui-state-default">
+                </div>
+                <button id="allElements" data-href="test_file/">Download file</button>
+                <button id="save" data-href="">Save</button>
+                <div id="textToenter">
+                    <fieldset id="commmentBox">
+                        {% csrf_token %}
+                        <legend>Enter comment</legend><br>
+                        <textarea class="form-control" id="commentText"></textarea><br>
+                        <input id="isGeneral" type="checkbox">General Comment<br>
+                        <input id="commentSubmitButton" type="Submit" value="Enter Comment">
+                    </fieldset>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h2>Drag comments</h2>
+                <div class="list-group" id="general_comments">
+
+{#                <div class="list-group-item" id="1" style="display: flex;">#}
+{#                    <a class="draggable list-group-item ui-draggable" id="1" style="width: 80%;">test</a>#}
+{#                    <button class="btn delete-comment" style="width: 15%; margin-left: 14px;">D</button>#}
+{#                </div>#}
+                    {% for general in general_comments %}
+                        <div class="list-group-item" id="{{ general.pk }}" style="display: flex;">
+                            <a class="draggable list-group-item" id="{{ general.pk }}" data-params="{csrfmiddlewaretoken:'{{csrf_token}}'}" data-pk="{{ general.pk }}"
+                               style="width: 80%; border-style: solid; border-color: #ddd">{{ general.message }}</a>
+                            <button class="btn delete-comment" style="width: 13%; margin-left: 18px;" onclick="delete_general_comment({{ general.pk }})">D</button>
+                        </div>
+                    {% endfor %}
+{#                        <a href="#" class="draggable list-group-item" id="{{ general.pk }}" >#}
+{#                            Drag Me2!#}
+{#                            <textarea class="commentBox" id="2">Drag Me2!</textarea>#}
+{#                            <i class="fa fa-arrows-alt"></i>#}
+{#                        </a>#}
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        #feedback_Zone{
+            height: 400px;
+        }
+
+
+    </style>
+    <script>
+
+    function fetch_general_comments(){
+        var pathArray = window.location.pathname.split( '/' );
+        if (pathArray[2] != null && pathArray[2] != ""){
+            $.ajax({
+                method: "GET",
+                url: "/"+pathArray[1]+"/"+pathArray[2]+"/fetch_general_comments/",
+                success: function(data){
+                    $('#general_comments').html(data);
+                    setListeners();
+                },
+                dataType: 'html'
+            });
+        }
+    }
+
+    function fetch_student_feedback(){
+        $.ajax({
+            method: "GET",
+            url: 'fetch_student_feedback/',
+            success: function(data){
+                $('#feedback_Zone').html(data)
+            },
+            dataType: 'html'
+        });
+    }
+
+    function add_comment(isGeneral, assignment_slug, student_id, commentText){
+
+        $.ajax({
+            type : "POST",
+            url : '/add_comment/',
+            data : {
+                isGeneral : isGeneral,
+                student_id : student_id,
+                message : commentText,
+                assignment_title_slug : assignment_slug,
+                csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+            },
+            dataType: 'text',
+            success: function(data){
+                fetch_general_comments();
+                fetch_student_feedback();
+                alert(data);
+            }
+        });
+    }
+
+    function fetch_general_comment_usedValues(assignment_slug) {
+        $.ajax({
+            type: 'POST',
+            url: '/get_general_comment_usedNum/',
+            data:{
+                assignment_title_slug: assignment_slug,
+                csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+            },
+            success: function(data){
+                console.log(data);
+                var keysArray =Object.keys(data);
+                for(var i=0; i< keysArray.length; i++){
+                    var id = keysArray[i];
+                    $("#"+id).data("used",data[parseInt(id)]);
+                }
+
+                reSort();
+            },
+            dataType: 'json'
+        });
+    }
+
+    function drop_general_comment_to_feedback(comment_id) {
+        var pathArray = window.location.pathname.split( '/' );
+
+        $.ajax({
+            type: "POST",
+            url: '/add_general_comment_to_feedback/',
+            data: {
+                comment_id : comment_id,
+                student_id : pathArray[3],
+                csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+            },
+            dataType: 'text',
+            success: function(data){
+                fetch_student_feedback();
+                fetch_general_comment_usedValues(pathArray[2]);
+            }
+        })
+    }
+
+    function delete_from_feedback(feedback_id){
+        if(confirm("Are you sure you want to delete this?")) {
+            $.ajax({
+                type: "POST",
+                url: '/delete_from_feedback/',
+                data:{
+                    feedback_id: feedback_id,
+                    csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+                },
+                dataType: 'text',
+                success: function(data){
+                    fetch_student_feedback();
+                }
+            });
+        }
+    }
+
+    function delete_general_comment(id){
+
+            if(confirm("Are you sure you want to delete this?")) {
+                $.ajax({
+                    type: "POST",
+                    url: '/delete_general_comment/',
+                    data:{
+                        comment_id: id,
+                        csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+                    },
+                    success: function(data){
+                        fetch_general_comments();
+                        fetch_student_feedback();
+                    },
+                    dataType: 'text'
+                });
+            }
+
+    }
+
+    $(document).ready(function(){
+        fetch_general_comments();
+        fetch_student_feedback();
+{#        $('.commentBox').click(function(){#}
+{#            $('.draggable').draggable({#}
+{#                cancel:'textarea'#}
+{#            });#}
+{#        });#}
+
+{#        $('.list-group a').hover(function(e){#}
+{#            $(this).#}
+{#        })#}
+
+        $('#feedback_Zone').droppable({
+            accept: '.draggable',
+            drop: function(event, ui){
+                var droppedItem = $(ui.draggable).clone();
+                console.log();
+{#                droppedItem.find('textarea')[0].disabled="true";#}
+{#                console.log(droppedItem.find('i'));#}
+{#                droppedItem.find('i')[0].style.display="none";#}
+{#                console.log(droppedItem[0])#}
+                var pk = $(droppedItem[0]).data("pk")
+                drop_general_comment_to_feedback(pk)
+{#                event.target.appendChild(droppedItem[0]);#}
+            }
+        });
+        $('#allElements').click(function(){
+            console.log('download');
+            window.document.location = $(this).data("href");
+
+{#            var children = $("#feedback_Zone").children();#}
+{#            for(var i=0; i < children.length; i++){#}
+{#                var commentbox = children[i];#}
+{#                var htmlContent = commentbox.textContent;#}
+{#                console.log(htmlContent);#}
+{#                alert(htmlContent);#}
+{#            }#}
+
+        });
+
+{#        $('#commentButton').click(function(){#}
+{#            var textBox = $('#newComment').val();#}
+{#            if($('#isGeneral').prop('checked')) {#}
+{#                var general = '<div class="dragable"><textarea></textarea></div>';#}
+{#                // something when checked#}
+{#                } else {#}
+{##}
+{#                    // something else when not#}
+{#                }#}
+{#        });#}
+
+        $('#commentSubmitButton').click(function(){
+
+            var pathArray = window.location.pathname.split( '/' );
+
+            var is_general = $('#isGeneral').prop('checked')
+            var assignment_slug = pathArray[2]
+            var student_id = pathArray[3]
+            var commentText = $('#commentText').val();
+
+            if (commentText == ""){
+                alert('please enter a comment');
+                return;
+            }
+
+            add_comment(is_general, assignment_slug, student_id, commentText);
+
+        });
+
+    });
+
+    function setListeners() {
+        $.fn.editable.defaults.mode = 'popup';
+
+        $('.draggable').editable({
+            type: 'textarea',
+            placement: 'left',
+            url: '/update_general_comment/',
+            title: 'Update comment',
+            ajaxOptions: {
+                type:'POST'
+            },
+            send: 'always',
+            success: function() {
+                fetch_student_feedback();
+            }
+        });
+
+        $('.draggable').draggable({
+            helper:'clone',
+            cancel:''
+        });
+    }
+
+    body = d3.select("body");
+
+    function reSort() {
+        body.selectAll(".each-general-comment")
+                .datum(function() {
+                    console.log();
+                    return +$(this).data('used'); })
+                .sort(function(a, b) {
+                    return d3.descending(a,b);
+                })
+                .transition().duration(500)
+                .style({
+                    top: function(d, i) {
+                        return 0 + ((i * 20)) + "px";
+                    }
+                });
+    }
+
+    </script>
+{% endblock %}

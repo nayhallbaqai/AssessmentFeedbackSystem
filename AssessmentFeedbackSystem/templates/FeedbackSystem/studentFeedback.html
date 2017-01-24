@@ -1,0 +1,8 @@
+{% if feedback %}
+    {% for fe in feedback %}
+        <div>
+            <Button onclick="delete_from_feedback({{ fe.pk }})">D</Button>
+            <a class="list-group-item">{{ fe.comments.message }}</a>
+        </div>
+    {% endfor %}
+{% endif %}

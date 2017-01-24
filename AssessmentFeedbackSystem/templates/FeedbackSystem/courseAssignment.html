@@ -2,36 +2,226 @@
 {% load staticfiles %}
 {% if user.is_authenticated %}
     {% block content %}
+        <script src="{% static "scripts/addDeleteCourse.js" %}"></script>
         <a href="/accounts/logout/">Logout</a><br />
         <div class="container">
             <div class="row">
                 <div class="col-sm-4">
                     <h1>Courses</h1>
                     {% csrf_token %}
-                    <div class="list-group" id="courses">
-                        <a href="All" class="list-group-item active">All</a>
-                        {% for course in courses %}
-                            <a href="{{ course.pk }}" class="list-group-item">{{ course.name }}</a>
-                        {% endfor %}
-                    </div>
-                    <i class="icon-chevron-right"></i>
-                </div>
-                <div class="col-sm-8">
-                    <h1>Assignments</h1>
-                    <div class="assignment" style="overflow: scroll;">
-                        <div class="list-group" id="assignment">
-                            {% for assignment in AllAssignments %}
-                                <a href="#" class="list-group-item">{{ assignment.title }}</a>
+                    <button id="deleteCourse" class="btn btn-danger courseButton" data-toggle="modal" data-target="#deleteCourseModal"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                    <button id="addCourse" class="btn btn-success courseButton" data-toggle="modal" data-target="#addCourseModal"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                    <div class="scroll">
+                        <div class="list-group" id="courses">
+                            <a href="All" class="list-group-item active">All</a>
+                            {% for course in courses %}
+                                <a href="{{ course.pk }}" class="list-group-item">{{ course.name }}</a>
                             {% endfor %}
                         </div>
                     </div>
+                </div>
+                <div class="col-sm-8">
+                    <h1>Assignments</h1>
+                    <div class="scroll">
+                        <div class="assignment">
+                            <div class="list-group" id="assignment">
+                                {% for assignment in AllAssignments %}
+                                    <a href="{{ assignment.slug }}" class="list-group-item">{{ assignment.title }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                     <footer class="footer">
-                            <button class="btn btn-primary">Add Assignment</button>
-                            <button class="btn btn-primary">Add Students</button>
-                            <button class="btn btn-primary">View Students</button>
-                        </footer>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#assignmentModal" id="addAssignment">Add Assignment</button>
+                            <button class="btn btn-primary" data-toggle="modal" id="addStudents" data-target="#addStudentModal">Add Students</button>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#viewStudentModal" disabled="true" id="viewStudents">View Students</button>
+                    </footer>
+                </div>
+            </div>
+            <div class="modal fade" id="assignmentModal" tabindex="-1" role="dialog" aria-labelledby="assignmentModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="assignmentModalLabel">Add Assignment</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div classs="form-group" id="response">
+
+                            </div>
+                            <div class="form-group">
+                                <label for="assignment-title" class="control-label">Title:</label>
+                                <input type="text" class="form-control" id="title">
+                            </div>
+                            <div class="form-group">
+                                <label for="course-select" class="control-label">Course:</label>
+                                <select class="selectpicker" data-live-search="true">
+                                    {% for course in courses %}
+                                        <option data-tokens="{{ course.name }}" value="{{ course.pk }}">{{ course.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="submitAssignment">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="viewStudentModal" role="dialog">
+                <div class="modal-dialog modal-lg">
+                <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title"></h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tableContainer">
+{#                                <h1 align="center" style="margin-top: 5px">Student Table</h1>#}
+                                <div class="table-responsive">
+                                    <br />
+                                    <div id="live_data"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal fade" id="addCourseModal" role="dialog">
+                <div class="modal-dialog">
+                <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title">Add a</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div role="tabpanel">
+                                <!-- Nav tabs -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a href="#courseTab" aria-controls="courseTab" role="tab" data-toggle="tab">Course</a>
+
+                                    </li>
+                                    <li role="presentation"><a href="#tutorTab" aria-controls="tutorTab" role="tab" data-toggle="tab">Tutor</a>
+
+                                    </li>
+                                </ul>
+                                <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane active" id="courseTab">
+                                        <div class="form-group" id="courseResponse"></div>
+                                        <div class="form-group">
+                                            <label for="course-title" class="control-label">Name:</label>
+                                            <input type="text" class="form-control" id="courseTitle" maxlength="50">
+                                        </div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="tutorTab">
+                                        <div class="form-group" id="tutorResponse"></div>
+                                        <div class="form-group">
+                                            <label for="course-tutor" class="control-label">Username:</label>
+                                            <input type="text" class="form-control" id="tutorUsername" maxlength="30">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="course-select" class="control-label">Course:</label>
+                                            <select class="selectpicker" data-live-search="true" name="options[]" multiple>
+                                                    <option data-tokens="all" value="all">Select / Deselect All</option>
+                                                {% for course in courses %}
+                                                    <option data-tokens="{{ course.name }}" value="{{ course.pk }}">{{ course.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="submitCourse">Add</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteCourseModal" role="dialog">
+                <div class="modal-dialog">
+                <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title">Delete a course</h2>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="course-select" class="control-label">Course:</label>
+                                <select class="selectpicker" data-live-search="true">
+                                    {% for course in courses %}
+                                        <option data-tokens="{{ course.name }}" value="{{ course.pk }}">{{ course.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" id="submitDeleteCourse">Delete</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="modal fade" id="addStudentModal" role="dialog">
+                <div class="modal-dialog">
+                <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title">Delete a course</h2>
+                        </div>
+                        <form id="addStudentByCSV">
+                            <div class="modal-body">
+                                <div class="form-group" id="uploadfile">
+                                    <input type="file" name="file_upload" id="csvFileUpload" accept=".csv, text/csv"/>
+                                    <br/>
+                                    <select class="selectpicker" data-live-search="true" name="options[]" multiple>
+                                            <option data-tokens="all" value="all">Select / Deselect All</option>
+                                        {% for course in courses %}
+                                            <option data-tokens="{{ course.name }}" value="{{ course.pk }}">{{ course.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Add class list</button>
+                            </div>
+                        </form>
+                    </div>
+
                 </div>
             </div>
 	    </div>
+        <style>
+            .scroll{
+                max-height:500px;
+                overflow: scroll;
+            }
+            .courseButton {
+                margin-bottom: 2px;
+                border-top-left-radius: 20px;
+                border-top-right-radius: 20px;
+                width:49%;
+            }
+        </style>
     {% endblock %}
 {% endif %}
