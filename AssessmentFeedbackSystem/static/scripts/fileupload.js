@@ -17,120 +17,17 @@ $(document).ready(function(){
     });
 
     selector.change(function(e) {
-
-        var all = $('option[value=all]');
-        if (all.is(':selected')) {
-            if (getSelectedCourse().length == 0) {
-                remove(allOptions,"all");
-                selector.selectpicker("val",allOptions);
-            } else {
-                selector.selectpicker("deselectAll");
-
-            }
-
-
-        }
+        allValueCheck(selector, allOptions)
     });
-
-    function remove(arr, what) {
-        var found = arr.indexOf(what);
-        while (found !== -1) {
-            arr.splice(found, 1);
-            found = arr.indexOf(what);
-        }
-    }
-
-    function getSelectedCourse(){
-        var selected = selector.val();
-        if (selected !== null){
-            remove(selected, "all");
-        }
-        return selected;
-    }
-
-    function checkCSV(){
-        var ext = $("input#csvFileUpload").val().split(".").pop().toLowerCase();
-
-        if($.inArray(ext, ["csv"]) === -1) {
-            csvInput.replaceWith( csvInput = csvInput.clone( true ) );
-            alert("Please upload a .csv file!");
-            return false;
-        }
-    }
-
-    function uploadStudents(course, students){
-
-        $.ajax({
-            type: "POST",
-            url: "/addStudentByCSV/",
-            data: {
-                'courses[]' : course,
-                students: JSON.stringify(students),
-                'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
-            },
-            success: function(data){
-                alert(data);
-            },
-            dataType: 'html'
-        });
-    }
 
     csvInput.change(function(e){
-        checkCSV();
-
-        // if (e.target.files != undefined) {
-        //     var reader = new FileReader();
-        //     reader.onload = function(e) {
-        //         var csvval=e.target.result.split("\n");
-        //         var csvvalue=csvval[0].split(",");
-        //         var inputrad="";
-        //         console.log(csvval);
-        //         for(var i=0;i<csvvalue.length;i++) {
-        //             var temp=csvvalue[i];
-        //             var inputrad=inputrad+" "+temp;
-        //         }
-        //         // $("#csvimporthint").html(inputrad);
-        //         // $("#csvimporthinttitle").show();
-        //     };
-        //
-        //     reader.readAsText(e.target.files.item(0));
-        // }
-        return false;
+        if (checkCSV(csvInput) == false) return false;
     });
-
-    function checkHeader(listOfHeader){
-        var isHeader = false;
-        if (listOfHeader.length === 3){
-            var id = (listOfHeader[0] == "ID");
-            var firstname = (listOfHeader[1] == "Firstname");
-            var surname = (listOfHeader[2] == "Surname");
-
-            isHeader = id && firstname && surname;
-        }else {
-            isHeader = false;
-        }
-
-        return isHeader;
-    }
-
-    function csvFileChecking(csvDataInArray){
-        if (csvDataInArray.length > 0) {
-            if(checkHeader(csvDataInArray[0])){
-                return true;
-            }else{
-                alert('CSV file header should be: ID, Firstname, Surname');
-                return false;
-            }
-        } else {
-            alert('No data in csv file');
-            return false;
-        }
-    }
 
     $('form#addStudentByCSV').on('submit', function(e){
         e.preventDefault();
         var file = document.querySelector('input[name=file_upload]');
-        checkCSV();
+        if (checkCSV(csvInput) == false) return false;
 
         var data = null;
         var csvObject = null;
@@ -154,7 +51,7 @@ $(document).ready(function(){
                     alert('No data in csv file');
                     return false;
                 }else{
-                    course = getSelectedCourse();
+                    course = getSelectedCourse(selector);
                     if (course == null){
                         alert('please select a course');
                         return false;
@@ -208,3 +105,92 @@ $(document).ready(function(){
     // });
 
 });
+
+
+function allValueCheck(selector, allOptions) {
+
+    var all = $('option[value=all]');
+    if (all.is(':selected')) {
+        if (getSelectedCourse(selector).length == 0) {
+            remove(allOptions,"all");
+            selector.selectpicker("val", allOptions);
+        } else {
+            selector.selectpicker("deselectAll");
+
+        }
+
+
+    }
+}
+
+function remove(arr, what) {
+    var found = arr.indexOf(what);
+    while (found !== -1) {
+        arr.splice(found, 1);
+        found = arr.indexOf(what);
+    }
+}
+
+function getSelectedCourse(selector){
+    var selected = selector.val();
+    if (selected !== null){
+        remove(selected, "all");
+    }
+    return selected;
+}
+
+function checkCSV(csvInput){
+    var ext = $("input#csvFileUpload").val().split(".").pop().toLowerCase();
+
+    if($.inArray(ext, ["csv"]) === -1) {
+        csvInput.replaceWith( csvInput = csvInput.clone( true ) );
+        alert("Please upload a .csv file!");
+        return false;
+    }
+}
+
+function uploadStudents(course, students){
+
+    $.ajax({
+        type: "POST",
+        url: "/addStudentByCSV/",
+        data: {
+            'courses[]' : course,
+            students: JSON.stringify(students),
+            'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
+        },
+        success: function(data){
+            alert(data);
+        },
+        dataType: 'html'
+    });
+}
+
+function checkHeader(listOfHeader){
+    var isHeader = false;
+    if (listOfHeader.length === 3){
+        var id = (listOfHeader[0] == "ID");
+        var firstname = (listOfHeader[1] == "Firstname");
+        var surname = (listOfHeader[2] == "Surname");
+
+        isHeader = id && firstname && surname;
+    }else {
+        isHeader = false;
+    }
+
+    return isHeader;
+}
+
+function csvFileChecking(csvDataInArray){
+    if (csvDataInArray.length > 0) {
+        if(checkHeader(csvDataInArray[0])){
+            return true;
+        }else{
+            alert('CSV file header should be: ID, Firstname, Surname');
+            return false;
+        }
+    } else {
+        alert('No data in csv file');
+        return false;
+    }
+}

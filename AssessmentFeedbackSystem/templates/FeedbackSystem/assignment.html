@@ -1,8 +1,8 @@
 {% load staticfiles %}
 {% if assignments %}
     {% for assignment in assignments %}
-        <a href="#" class="list-group-item">{{ assignment.title }}</a>
+        <a href="{{ assignment.slug }}" class="list-group-item">{{ assignment.title }}</a>
     {% endfor %}
 {% else %}
-    <li class="list-group-item">No assignments found<li>
+    <li class="list-group-item">No assignments found</li>
 {% endif %}

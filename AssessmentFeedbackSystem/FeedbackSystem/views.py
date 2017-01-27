@@ -141,6 +141,35 @@ def delete_course(request):
     else:
         return HttpResponse('Not a POST request')
 
+@login_required
+def course_assignment_to_tutor(request):
+    if request.method == "POST":
+        try:
+            staff = request.user
+            courses = request.POST.getlist('courses[]')
+            username = request.POST['username']
+        except KeyError:
+            return HttpResponse('you must select a course and enter a tutors name')
+
+        if len(courses) == 0:
+            return HttpResponse('please select a course')
+
+        try:
+            tutor = User.objects.get(username=username)
+        except User.DoesNotExists:
+            return HttpResponse('Please enter the right username')
+
+        for course_id in courses:
+            if staff.course_set.filter(pk=course_id).exists():
+                course = getCourseByID(course_id)
+                tutor.course_set.add(course)
+
+        tutor.save()
+
+        return HttpResponse(username + ' is assigned to the selected courses')
+
+    else:
+        return HttpResponse('Not a POST request')
 
 @login_required
 def get_assignments(request):
@@ -198,7 +227,7 @@ def get_all_student(request):
 
 '''
 -------------------------------------------------------------------------------------------------
--------------------------------- Code Section for Live Table -------------------------------------
+-------------------------- Code Section for Live Student Table ----------------------------------
 -------------------------------------------------------------------------------------------------
 '''
 

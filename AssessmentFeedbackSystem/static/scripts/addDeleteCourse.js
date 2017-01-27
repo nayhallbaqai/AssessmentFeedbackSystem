@@ -3,6 +3,9 @@
  */
 
 function getCourses(forMainContent) {
+
+    var selected_course = $('#courses .active').attr('href');
+    console.log(selected_course);
     $.ajax({
             url:"/getUserCourses/",
             method:"POST",
@@ -15,7 +18,16 @@ function getCourses(forMainContent) {
                 if (forMainContent){
                     $('#courses').html(data);
                     setCourseListener();
-                    getAssignments('All');
+
+                    var course = $('#courses a[href="'+selected_course+'"]');
+                    if (course.length == 0){
+                        $('#viewStudents').attr('disabled', true);
+                        getAssignments("All");
+                    }else {
+                        jQuery("#courses a").removeClass("active");
+                        jQuery(course).addClass("active");
+                        getAssignments(selected_course);
+                    }
                     getCourses(false);
                 }else{
                     // for select pickers
@@ -66,16 +78,49 @@ function deleteCourse(course_id) {
         },
         dataType: "text",
         success: function (data) {
-            $('#')
             getCourses(true);
         }
     });
     
 }
 
+function courseAssignToTutor(username, courses) {
+
+    $.ajax({
+        type: "POST",
+        url: "/assignCourseToTutor/",
+        data:{
+            username: username,
+            'courses[]': courses,
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value
+        },
+        dataType: "text",
+        success: function (data) {
+            alert(data);
+        }
+    });
+}
+
 
 
 $(document).ready(function(){
+
+    // selectpicker for tutor
+    // check if all selected then select all courses
+
+    var selector = $('#tutorTab .selectpicker');
+    selector.selectpicker();
+    var allOptions = [];
+
+    $("#tutorTab .selectpicker option").each(function()
+    {
+        allOptions.push($(this).val());
+    });
+
+    selector.change(function(e) {
+        allValueCheck(selector, allOptions)
+    });
+
 
     $('#submitCourse').click(function (e) {
         e.preventDefault();
@@ -90,7 +135,8 @@ $(document).ready(function(){
             // $('#courseTitle').val("");
 
             if (courseName == ""){
-                $('#courseResponse').html('<label class="control-label">Please enter a course name</label><br/>');
+                var message = '<div class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>Please enter a course name</div>';
+                $('#courseResponse').html(message);
                 return;
             }
 
@@ -98,6 +144,23 @@ $(document).ready(function(){
         }else{
 
             // add tutor
+
+            var tutorUsername = $('#tutorUsername').val();
+            var courses = getSelectedCourse(selector);
+
+            if (tutorUsername == ""){
+                var message = '<div class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>Please add a username</div>';
+                $('#tutorResponse').html(message);
+                return;
+            }
+
+            if (courses == null){
+                var message = '<div class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>Please select a course</div>';
+                $('#tutorResponse').html(message);
+                return;
+            }
+
+            courseAssignToTutor(tutorUsername, courses); // courses need to add
         }
 
     });

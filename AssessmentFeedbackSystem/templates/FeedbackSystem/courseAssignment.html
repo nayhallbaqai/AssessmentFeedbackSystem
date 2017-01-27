@@ -3,6 +3,12 @@
 {% if user.is_authenticated %}
     {% block content %}
         <script src="{% static "scripts/addDeleteCourse.js" %}"></script>
+
+        <!-- fileupload -->
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+        <script src="{% static "scripts/fileupload.js" %}"></script>
+
         <a href="/accounts/logout/">Logout</a><br />
         <div class="container">
             <div class="row">
@@ -191,7 +197,7 @@
                         <form id="addStudentByCSV">
                             <div class="modal-body">
                                 <div class="form-group" id="uploadfile">
-                                    <input type="file" name="file_upload" id="csvFileUpload" accept=".csv, text/csv"/>
+                                    <input type="file" name="file_upload" id="csvFileUpload"/>
                                     <br/>
                                     <select class="selectpicker" data-live-search="true" name="options[]" multiple>
                                             <option data-tokens="all" value="all">Select / Deselect All</option>

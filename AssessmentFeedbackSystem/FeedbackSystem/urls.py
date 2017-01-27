@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^getUserCourses/$', views.get_user_courses, name='getCourses'),
     url(r'^addCourse/$', views.add_course, name='add_course'),
     url(r'^deleteCourse/$', views.delete_course, name='deleteCourse'),
+    url(r'^assignCourseToTutor/$', views.course_assignment_to_tutor, name='addCourseToTutor'),
 
     url(r'^ajax_assignment/$', views.get_assignments, name='ajax_assignment'),
     url(r'^addAssignment/$', views.add_assignment, name='addAssignment'),
